@@ -1,21 +1,28 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 
-async function scrapeImages(query) {
-    const url = `https://www.whitestuff.com/search?query=${query}`;
-    const { data } = await axios.get(url);
-    const $ = cheerio.load(data);
-    const images = [];
+module.exports = async (req, res) => {
+    const query = req.query.q;
+    if (!query) {
+        return res.status(400).send('Query parameter is required');
+    }
 
-    // Select images within the plp-product-grid div
-    $('div[data-testid="plp-product-grid"] img').each((index, element) => {
-        const src = $(element).attr('src');
-        if (src) {
-            images.push(src);
-        }
-    });
+    try {
+        const url = `https://www.whitestuff.com/search?query=${query}`;
+        const { data } = await axios.get(url);
+        const $ = cheerio.load(data);
+        const images = [];
 
-    return images;
-}
+        // Select images within the plp-product-grid div
+        $('div[data-testid="plp-product-grid"] img').each((index, element) => {
+            const src = $(element).attr('src');
+            if (src) {
+                images.push(src);
+            }
+        });
 
-module.exports = scrapeImages;
+        res.status(200).json(images);
+    } catch (error) {
+        res.status(500).send('Error scraping images');
+    }
+};
