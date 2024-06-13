@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="apple-touch-icon" href="icon.webp" />
+    <link rel="apple-touch-startup-image" href="icon.webp" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="viewport" content="user-scalable=no, width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WS Searcher</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #000;
+            color: #fff;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+        h1 {
+            font-family: 'Chalkduster', 'Comic Sans MS', cursive;
+            font-size: 2em;
+            margin: 20px 0;
+        }
+        #search-container {
+            display: flex;
+            width: 90%;
+            max-width: 600px;
+        }
+        #query {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid #fff;
+            border-radius: 5px 0 0 5px;
+            background-color: #000;
+            color: #fff;
+        }
+        #search-button {
+            padding: 10px 20px;
+            font-size: 1em;
+            border: 1px solid #fff;
+            border-left: none;
+            border-radius: 0 5px 5px 0;
+            background-color: #000;
+            color: #fff;
+            cursor: pointer;
+        }
+        #search-button:hover {
+            background-color: #444;
+        }
+        #images {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            overflow-y: scroll;
+        }
+        .image-container {
+            margin: 10px;
+        }
+        .image-container img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            cursor: pointer;
+        }
+        #fullscreen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        #fullscreen img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>WS Searcher</h1>
+    <div id="search-container">
+        <input type="tel" id="query" placeholder="Enter search query">
+        <button id="search-button" onclick="searchImages()">Search</button>
+    </div>
+    <div id="images"></div>
+    <div id="fullscreen" onclick="exitFullscreen()">
+        <img src="" alt="Fullscreen Image">
+    </div>
+    <script>
+        async function searchImages() {
+            const query = document.getElementById('query').value;
+            const response = await fetch(`/search?q=${query}`);
+            const images = await response.json();
+            const imagesContainer = document.getElementById('images');
+            imagesContainer.innerHTML = '';
+            images.forEach(src => {
+                const img = document.createElement('img');
+                img.src = src;
+                img.onclick = () => showFullscreen(src);
+                const div = document.createElement('div');
+                div.classList.add('image-container');
+                div.appendChild(img);
+                imagesContainer.appendChild(div);
+            });
+        }
+
+        function showFullscreen(src) {
+            const fullscreenDiv = document.getElementById('fullscreen');
+            const fullscreenImg = fullscreenDiv.querySelector('img');
+            fullscreenImg.src = src;
+            fullscreenDiv.style.display = 'flex';
+            if (fullscreenDiv.requestFullscreen) {
+                fullscreenDiv.requestFullscreen();
+            } else if (fullscreenDiv.webkitRequestFullscreen) { // iOS Safari
+                fullscreenDiv.webkitRequestFullscreen();
+            } else if (fullscreenDiv.msRequestFullscreen) { // IE/Edge
+                fullscreenDiv.msRequestFullscreen();
+            }
+        }
+
+        function exitFullscreen() {
+            const fullscreenDiv = document.getElementById('fullscreen');
+            fullscreenDiv.style.display = 'none';
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) { // iOS Safari
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) { // IE/Edge
+                document.msExitFullscreen();
+            }
+        }
+    </script>
+</body>
+</html>
